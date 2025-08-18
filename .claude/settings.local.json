@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__clojure-mcp__clojure_eval"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

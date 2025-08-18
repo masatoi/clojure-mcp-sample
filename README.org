@@ -1,0 +1,52 @@
+* Clojure + Clojure-MCP + Claude Code手順
+
+** 開発するプロジェクト側でnREPLサーバを起動する
+
+#+begin_src 
+$ clojure -M:nrepl
+nREPL server started on port 7888 on host localhost - nrepl://localhost:7888
+#+end_src
+
+** Clojureコマンドの設定にMCPサーバの設定を入れる
+
+~/.clojure/deps.edn
+#+begin_src clojure
+{:aliases
+ {:mcp
+  {:deps {org.slf4j/slf4j-nop {:mvn/version "2.0.16"} ;; stdio用
+          com.bhauman/clojure-mcp {:git/url "https://github.com/bhauman/clojure-mcp.git"
+                                   :git/tag "v0.1.8-alpha"
+                                   :git/sha "457f197"}}
+   :exec-fn clojure-mcp.main/start-mcp-server
+   :exec-args {:port 7888}}}}
+#+end_src
+
+MCPサーバ起動テスト
+
+#+begin_src 
+clojure -X:mcp :port 7888
+#+end_src
+
+** Claude Code側の設定
+
+MCPサーバ起動テストに使ったコマンドを設定する
+
+#+begin_src 
+claude mcp add clojure-mcp -- clojure -X:mcp :port 7888
+#+end_src
+
+claude で起動して /mcp コマンドで接続確認
+
+#+begin_src 
+ Manage MCP servers
+│
+│ ❯ 1. clojure-mcp  ✔ connected · Enter to view details
+│
+│ MCP Config locations (by scope):
+│  • User config (available in all your projects):
+│    • /home/wiz/.claude.json
+│  • Project config (shared via .mcp.json):
+│    • /home/wiz/clj/myapp/.mcp.json (file does not exist)
+│  • Local config (private to you in this project):
+│    • /home/wiz/.claude.json [project: /home/wiz/clj/myapp]
+#+end_src
