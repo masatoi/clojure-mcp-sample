@@ -1,5 +1,20 @@
 * Clojure + Clojure-MCP + Claude Code手順
 
+** 最小構成でプロジェクト作成
+
+#+begin_src
+mkdir myapp && cd myapp
+cat > deps.edn <<'EDN'
+{:paths ["src"]
+ :aliases {}}
+EDN
+mkdir -p src/myapp
+cat > src/myapp/core.clj <<'CLJ'
+(ns myapp.core)
+(defn -main [] (println "hello"))
+CLJ
+#+end_src
+
 ** 開発するプロジェクト側でnREPLサーバを起動する
 
 #+begin_src 
@@ -49,4 +64,16 @@ claude で起動して /mcp コマンドで接続確認
 │    • /home/wiz/clj/myapp/.mcp.json (file does not exist)
 │  • Local config (private to you in this project):
 │    • /home/wiz/.claude.json [project: /home/wiz/clj/myapp]
+#+end_src
+
+** テスト実行
+
+特定のテストファイルのみ実行:
+#+begin_src
+clojure -M -e "(require '[clojure.test :as test]) (require '[myapp.core-test]) (test/run-tests 'myapp.core-test)"
+#+end_src
+
+全テストファイルを実行:
+#+begin_src
+clojure -M -e "(require '[clojure.test :as test]) (require '[myapp.core-test]) (test/run-all-tests #\".*-test$\")"
 #+end_src
