@@ -4,7 +4,9 @@
       "mcp__clojure-mcp__clojure_eval",
       "mcp__clojure-mcp__LS",
       "mcp__clojure-mcp__read_file",
-      "mcp__clojure-mcp__clojure_edit"
+      "mcp__clojure-mcp__clojure_edit",
+      "mcp__clojure-mcp__bash",
+      "mcp__clojure-mcp__file_write"
     ],
     "deny": [],
     "ask": []
