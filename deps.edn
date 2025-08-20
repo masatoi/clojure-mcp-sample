@@ -1,4 +1,6 @@
 {:paths ["src" "test"]
+ :deps {net.mikera/core.matrix {:mvn/version "0.63.0"}
+        net.mikera/vectorz-clj {:mvn/version "0.48.0"}}
  :aliases
  {:nrepl
   {:extra-paths ["test"]
