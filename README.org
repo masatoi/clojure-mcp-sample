@@ -77,3 +77,23 @@ clojure -M -e "(require '[clojure.test :as test]) (require '[myapp.core-test]) (
 #+begin_src
 clojure -M -e "(require '[clojure.test :as test]) (require '[myapp.core-test]) (test/run-all-tests #\".*-test$\")"
 #+end_src
+
+** より複雑なプログラム
+
+多層パーセプトロンを実装し、関数近似するためのプログラムを作ってください。
+sin関数の周辺に標準正規分布でデータセットを作り、関数近似して元のsin関数を近似させてください。
+
+MCPサーバ(clojure-mcp)に対して最小の例でevalを実行してみてください。
+
+同様に、ここまでに定義したフィボナッチ関数を呼び出せますか？
+
+** コストが高い
+
+> /cost 
+  ⎿  Total cost:            $4.29
+     Total duration (API):  8m 21.6s
+     Total duration (wall): 20h 44m 35.2s
+     Total code changes:    0 lines added, 0 lines removed
+     Usage by model:
+         claude-3-5-haiku:  2.6k input, 243 output, 0 cache read, 0 cache write
+            claude-sonnet:  612 input, 25.0k output, 6.4m cache read, 533.3k cache write
