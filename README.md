@@ -1,8 +1,8 @@
-* Clojure + Clojure-MCP + Claude Code手順
+# Clojure + Clojure-MCP + Claude Code手順
 
-** 最小構成でプロジェクト作成
+## 最小構成でプロジェクト作成
 
-#+begin_src
+```bash
 mkdir myapp && cd myapp
 cat > deps.edn <<'EDN'
 {:paths ["src"]
@@ -13,19 +13,20 @@ cat > src/myapp/core.clj <<'CLJ'
 (ns myapp.core)
 (defn -main [] (println "hello"))
 CLJ
-#+end_src
+```
 
-** 開発するプロジェクト側でnREPLサーバを起動する
+## 開発するプロジェクト側でnREPLサーバを起動する
 
-#+begin_src 
+```bash
 $ clojure -M:nrepl
 nREPL server started on port 7888 on host localhost - nrepl://localhost:7888
-#+end_src
+```
 
-** Clojureコマンドの設定にMCPサーバの設定を入れる
+## Clojureコマンドの設定にMCPサーバの設定を入れる
 
 ~/.clojure/deps.edn
-#+begin_src clojure
+
+```clojure
 {:aliases
  {:mcp
   {:deps {org.slf4j/slf4j-nop {:mvn/version "2.0.16"} ;; stdio用
@@ -34,25 +35,25 @@ nREPL server started on port 7888 on host localhost - nrepl://localhost:7888
                                    :git/sha "457f197"}}
    :exec-fn clojure-mcp.main/start-mcp-server
    :exec-args {:port 7888}}}}
-#+end_src
+```
 
 MCPサーバ起動テスト
 
-#+begin_src 
+```bash
 clojure -X:mcp :port 7888
-#+end_src
+```
 
-** Claude Code側の設定
+## Claude Code側の設定
 
 MCPサーバ起動テストに使ったコマンドを設定する
 
-#+begin_src 
+```bash
 claude mcp add clojure-mcp -- clojure -X:mcp :port 7888
-#+end_src
+```
 
 claude で起動して /mcp コマンドで接続確認
 
-#+begin_src 
+```
  Manage MCP servers
 │
 │ ❯ 1. clojure-mcp  ✔ connected · Enter to view details
@@ -64,36 +65,45 @@ claude で起動して /mcp コマンドで接続確認
 │    • /home/wiz/clj/myapp/.mcp.json (file does not exist)
 │  • Local config (private to you in this project):
 │    • /home/wiz/.claude.json [project: /home/wiz/clj/myapp]
-#+end_src
+```
 
-** テスト実行
+## テスト実行
 
 特定のテストファイルのみ実行:
-#+begin_src
+```bash
 clojure -M -e "(require '[clojure.test :as test]) (require '[myapp.core-test]) (test/run-tests 'myapp.core-test)"
-#+end_src
+```
 
 全テストファイルを実行:
-#+begin_src
+```bash
 clojure -M -e "(require '[clojure.test :as test]) (require '[myapp.core-test]) (test/run-all-tests #\".*-test$\")"
-#+end_src
+```
 
-** より複雑なプログラム
+## より複雑なプログラム
+
+### プロンプト
 
 多層パーセプトロンを実装し、関数近似するためのプログラムを作ってください。
 sin関数の周辺に標準正規分布でデータセットを作り、関数近似して元のsin関数を近似させてください。
 
-MCPサーバ(clojure-mcp)に対して最小の例でevalを実行してみてください。
+### evalのテスト (別経路でnREPLに接続して確認)
 
+MCPサーバ(clojure-mcp)に対して最小の例でevalを実行してみてください。
 同様に、ここまでに定義したフィボナッチ関数を呼び出せますか？
 
-** コストが高い
+## コストが高い
 
+API呼び出しに都度それまでのコンテキストを含めるため？
+
+```
 > /cost 
-  ⎿  Total cost:            $4.29
+  ⎿  Total cost:            $4.29
      Total duration (API):  8m 21.6s
      Total duration (wall): 20h 44m 35.2s
      Total code changes:    0 lines added, 0 lines removed
      Usage by model:
          claude-3-5-haiku:  2.6k input, 243 output, 0 cache read, 0 cache write
             claude-sonnet:  612 input, 25.0k output, 6.4m cache read, 533.3k cache write
+```
+
+一度完成した関数の実装の詳細は忘れる必要がありそう。インターフェースのみ知っていればいい
