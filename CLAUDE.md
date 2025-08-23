@@ -36,6 +36,20 @@ Run all tests:
 clojure -M -e "(require '[clojure.test :as test]) (require '[myapp.core-test]) (test/run-all-tests #\".*-test$\")"
 ```
 
+### Interactive Evaluation
+Basic REPL evaluation examples:
+```clojure
+;; Test fibonacci functions
+(require '[myapp.core :as core])
+(core/fibonacci 10)
+(core/fibonacci-memo 10)
+
+;; Quick neural network test
+(require '[myapp.neural-network :as nn])
+(def small-net (nn/create-network [1 3 1]))
+(nn/predict small-net [[0.5]])
+```
+
 ### Neural Network Demo
 To run the sin approximation demo, evaluate in REPL:
 ```clojure
