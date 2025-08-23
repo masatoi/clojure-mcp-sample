@@ -37,6 +37,10 @@
   :args (s/cat :coll (s/coll-of number?))
   :ret (s/coll-of number?))
 
+(s/fdef merge-sort
+  :args (s/cat :coll (s/coll-of number?))
+  :ret (s/coll-of number?))
+
 (s/fdef -main
   :args (s/cat)
   :ret nil?)
@@ -143,5 +147,52 @@
       (concat (quicksort (filter #(< % pivot) rest))
               [pivot]
               (quicksort (filter #(>= % pivot) rest))))))
+
+(defn bubble-sort
+  "バブルソートを実装する関数。昇順で並び替えます。"
+  ([coll] (bubble-sort coll false))
+  ([coll verbose]
+   (let [n (count coll)]
+     (loop [v (vec coll)
+            pass 0]
+       (if (>= pass (dec n))
+         v
+         (let [[v' swapped?]
+               (loop [v v
+                      j 0
+                      swapped? false]
+                 (if (>= j (- n pass 1))
+                   [v swapped?]
+                   (let [a (v j)
+                         b (v (inc j))]
+                     (if (> a b)
+                       (let [v2 (-> v (assoc j b) (assoc (inc j) a))]
+                         (when verbose (println "swap at" j ":" a "<->" b "=>" v2))
+                         (recur v2 (inc j) true))
+                       (recur v (inc j) swapped?)))))]
+           (if swapped?
+             (recur v' (inc pass))
+             v')))))))
+
+(defn merge-sort
+  "マージソートを実装する関数"
+  ([coll] (merge-sort coll false))
+  ([coll verbose]
+   (if (<= (count coll) 1)
+     coll
+     (let [[left right] (split-at (quot (count coll) 2) coll)]
+       (when verbose (println "Splitting:" coll "->" left right))
+       (let [sorted-left (merge-sort left verbose)
+             sorted-right (merge-sort right verbose)]
+         (when verbose (println "Merging:" sorted-left "and" sorted-right))
+         (letfn [(merge-fn [l r]
+                   (cond
+                     (empty? l) r
+                     (empty? r) l
+                     (<= (first l) (first r)) (lazy-seq (cons (first l) (merge-fn (rest l) r)))
+                     :else (lazy-seq (cons (first r) (merge-fn l (rest r))))))]
+           (let [merged (merge-fn sorted-left sorted-right)]
+             (when verbose (println "Merged:" (seq merged)))
+             merged)))))))
 
 (defn -main [] (println "hello"))

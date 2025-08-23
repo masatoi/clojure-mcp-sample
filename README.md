@@ -46,9 +46,13 @@ clojure -X:mcp :port 7888
 ## Claude Code側の設定
 
 MCPサーバ起動テストに使ったコマンドを設定する
+https://zenn.dev/karaage0703/articles/3bd2957807f311
 
 ```bash
 claude mcp add clojure-mcp -- clojure -X:mcp :port 7888
+
+# 設定をプロジェクトローカルに置くには (/path/to/project/.mcp.json にできる)
+claude mcp add clojure-mcp -s project -- clojure -X:mcp :port 7888
 ```
 
 claude で起動して /mcp コマンドで接続確認
@@ -135,7 +139,37 @@ $ cat .gemini/settings.json
 }
 ```
 
-### evalのテスト (別経路でnREPLに接続して確認)
+## Codex CLI
+
+インストール
+```
+npm install -g @openai/codex
+
+codex -m gpt-5 --config model_reasoning_effort=high
+```
+
+~/.codex/config.toml
+```toml
+[mcp_servers.clojure-mcp]
+command = "clojure"
+args = ["-X:mcp", ":port", "7888"]
+```
+
+## Emacsやる場合の注意
+
+以下を入れないと手動で再読み込みが必要
+
+```elisp
+;; ディスク上のファイルが変更されたら、バッファを自動的に再読み込みする
+(global-auto-revert-mode 1)
+```
+
+## 使ってて感じた注意点
+
+clojure_eval ツールは、特に指定しない場合、デフォルトで user 名前空間でコードを実行する。
+作業中の名前空間は明示的に指定する必要あり
+
+### プロンプト
 
 MCPサーバ(clojure-mcp)に対して最小の例でevalを実行してみてください。
 簡単な関数を定義してみてください。
@@ -171,3 +205,23 @@ evalでそれぞれの制約を検証してください。
 
 エラトステネスのふるいによる素数判定をする関数を定義して
 
+マージソートを実装し、evalで動作確認した上でsrc/myapp/core.clj に書き込んでください
+動作確認はどの名前空間で行ないましたか？
+=> 
+
+✦ 評価は user 名前空間で行いました。
+
+  clojure_eval ツールは、特に指定しない場合、デフォルトで user 名前空間でコードを実行します。
+
+  今回実装した merge-sort 関数は、他の名前空間の関数に依存しない自己完結したものであったため、user
+  名前空間で問題なく動作確認ができました。
+  
+myapp.core名前空間でevalしてください。
+各マージの段階の途中経過をprintしてください。
+
+オプショナルパラメータverboseで途中経過の表示を切り替えられるようにしてください。デフォルトは表示しないようにしてください。
+
+テストは core 名前空間ではなく、myapp.coreでやるようにしてください。
+(core/merge-sort [3 1 4 2]) ではなく (myapp.core/merge-sort [1 3 2 5 4 6]) でやるようにしてください。
+
+バブルソートを実装し、evalでmyapp.core名前空間で動作確認した上でsrc/myapp/core.clj に書き込んでください
