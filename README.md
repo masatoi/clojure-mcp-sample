@@ -49,6 +49,8 @@ MCPサーバ起動テストに使ったコマンドを設定する
 https://zenn.dev/karaage0703/articles/3bd2957807f311
 
 ```bash
+npm install -g @anthropic-ai/claude-code
+
 claude mcp add clojure-mcp -- clojure -X:mcp :port 7888
 
 # 設定をプロジェクトローカルに置くには (/path/to/project/.mcp.json にできる)
@@ -155,7 +157,7 @@ command = "clojure"
 args = ["-X:mcp", ":port", "7888"]
 ```
 
-## Emacsやる場合の注意
+## Emacsでやる場合の注意
 
 以下を入れないと手動で再読み込みが必要
 
@@ -166,8 +168,8 @@ args = ["-X:mcp", ":port", "7888"]
 
 ## 使ってて感じた注意点
 
-clojure_eval ツールは、特に指定しない場合、デフォルトで user 名前空間でコードを実行する。
-作業中の名前空間は明示的に指定する必要あり
+- clojure_eval ツールは、特に指定しない場合、デフォルトで user 名前空間でコードを実行する。作業する名前空間は明示的に指定する必要あり
+- ライブラリのインストールを指示すると、deps.ednを書き換えてくれるので、nREPLサーバを再起動してインストールを完了する必要がある
 
 ### プロンプト
 
@@ -225,3 +227,48 @@ myapp.core名前空間でevalしてください。
 (core/merge-sort [3 1 4 2]) ではなく (myapp.core/merge-sort [1 3 2 5 4 6]) でやるようにしてください。
 
 バブルソートを実装し、evalでmyapp.core名前空間で動作確認した上でsrc/myapp/core.clj に書き込んでください
+
+### WebAPI
+
+myapp.coreで定義された fibonacci-memo を使って、以下のようなWebAPIを定義してください。
+コードはsrc/myapp/webapi.cljに書いてください。コードの評価はmyapp.webapiで行なってください。
+
+- URL: GET /fibonacci
+- Query Parameters
+  - n: positive integer to calc Fib(n)
+- Response
+  - JSON object like `{"value": <Integer value of Fib(n)>}`
+
+Ring + Reitit ライブラリを使うように修正してください。
+Muuntaja で JSON を透過的にハンドリングするようにし、Malli で I/O スキーマを宣言・検証するようにしてください。
+
+Malliのスキーマはどこに定義されている？
+IOスキーマを宣言するのはReititの機能で、Malliはそれに従ってバリデーションをする機能を持っているということでしょうか
+
+codex
+- 結論: ほぼその理解で正しいです。 「どこにスキーマを書くか」は Reitit（ルートのdata）で、「検証・変換（coercion）を誰がするか」は Malli（reitit.coercion.malli 経由）です。
+結論: ほぼその理解で正しいです。 「どこにスキーマを書くか」は Reitit（ルートのdata）で、「検証・変換（coercion）を誰がするか」は Malli（reitit.coercion.malli 経由）です。
+-
+役割分担:
+    - Reitit: ルート定義に I/O スキーマを宣言する場所を提供（例: :parameters {:query [:map [:n pos-int?]]}, :responses {...}）。実際の検証はしません。
+    - Malli: スキーマ表現（[:map [:n pos-int?]] など）を解釈し、検証・（必要なら）型変換を行うライブラリ。
+    - Reititのcoercion: reitit.coercion.malli が Reitit の Coercion 実装として Malli を使う橋渡し。
+    - ミドルウェア: coercion/coerce-request-middleware と coercion/coerce-response-middleware が、ルートに宣言されたスキーマに従って Malli で I/O を検証/変換します。
+    - Muuntaja: JSON のパース/エンコードとコンテンツネゴシエーション（スキーマ検証とは役割が別）。
+-
+配線の要点（本リポの設定）:
+    - ルータの :data に :coercion malli/coercion を設定。
+    - ルートに :parameters と :responses を宣言（これらは Malli スキーマ記法）。
+    - ミドルウェア列に coerce-*-middleware を入れて実行時に Malli 検証を有効化。
+    - Muuntajaの format-* ミドルウェアで JSON <-> Clojure データを透過的に扱う。
+-
+補足:
+    - Reititは他のcoercion実装（Spec など）にも差し替え可能で、Malliはその一つです。
+    - 400エラー時の詳細（humanizedなど）は Malli が生成した検証エラーを Reitit が整形して返すものです。必要なら一律 {:error "..."}  に整形するハンドラも追加できます。
+
+myapp/webapi内の関数のユニットテストと、HTTPクライアントを使った統合テストを実装し、testディレクトリ以下に置いてください。
+
+- clj -M -m clojure.test
+- Or REPL:
+    - (require 'myapp.webapi-unit-test 'myapp.webapi-integration-test)
+    - (clojure.test/run-tests 'myapp.webapi-unit-test 'myapp.webapi-integration-test)
