@@ -47,6 +47,21 @@
 
 ;; --- Implementations ---
 
+(defn add1 [n]
+  (+ n 1))
+
+(defn stalin-sort
+  "スターリンソート：順序に従わない要素を削除してソートする"
+  [coll]
+  (if (empty? coll)
+    []
+    (reduce (fn [acc x]
+              (if (or (empty? acc) (>= x (last acc)))
+                (conj acc x)
+                acc))
+            []
+            coll)))
+
 (defn fibonacci
   "フィボナッチ数を計算する関数"
   [n]
