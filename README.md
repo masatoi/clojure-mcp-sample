@@ -179,7 +179,7 @@ $ cat .gemini/settings.json
 ```
 npm install -g @openai/codex
 
-codex -m gpt-5-codex --config model_reasoning_effort=high
+codex -m gpt-5-codex --config model_reasoning_effort=high --search
 ```
 
 Codex CLIは設定ファイル経由で
